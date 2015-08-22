@@ -1,0 +1,93 @@
+package com.projectwork.impl;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+import com.projectwork.bean.DataTableBean;
+import com.projectwork.impl.sql.DataTableServiceSQLIfc;
+
+public class GraphServiceImpl extends DatabaseConnectionServiceImpl implements DataTableServiceSQLIfc
+{
+    public List<DataTableBean> getGraphData(String startDate, String endDate)
+    {
+        List<DataTableBean> dataTableList = new ArrayList<DataTableBean>();
+
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        short recordFound = 0;
+        Connection con = null;
+        Statement stmt = null;
+        
+        String sql = null;
+        try
+        {
+            con = getConnection();
+            stmt = con.createStatement();
+
+            sql = GET_GRAPH_DATA;
+            ps = con.prepareStatement(sql);
+            
+            ps.setString(1, startDate);
+            ps.setString(2, endDate);
+
+            rs = ps.executeQuery();
+
+            while (rs.next())
+            {
+                DataTableBean bean = new DataTableBean();
+                bean.setValue(rs.getInt(DataTableServiceSQLIfc.DATA_TABLE_COLUMNS.VAL));
+                bean.setDateTimeStamp(getJAVADate(rs.getTimestamp(DataTableServiceSQLIfc.DATA_TABLE_COLUMNS.DATE_TIME_STAMP)));
+                
+                dataTableList.add(bean);
+                ++recordFound;
+            }
+            
+            if (recordFound == 0)
+            {
+                throw new Exception("No records found for provided Gift Card Number");
+            }
+        }
+        
+        catch (SQLException e)
+        {
+            System.out.println("Exception in closing DB resources");
+            e.printStackTrace();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            try {
+                rs.close();
+                stmt.close();
+                con.close();
+            } catch (SQLException e) {
+                System.out.println("Exception in closing DB resources");
+            } 
+        }
+
+        return dataTableList;
+
+    }
+    
+    public Calendar getJAVADate(Timestamp date)
+    {
+        Calendar cal = null;
+        if (date != null)
+        {
+            cal = Calendar.getInstance();
+            cal.setTimeInMillis(date.getTime());
+
+        }
+        return cal;
+    }
+
+}

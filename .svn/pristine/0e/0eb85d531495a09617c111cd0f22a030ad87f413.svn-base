@@ -1,0 +1,97 @@
+package com.projectwork.action.meterDisplay;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.struts2.interceptor.ServletRequestAware;
+
+import com.opensymphony.xwork2.ActionSupport;
+import com.projectwork.bean.ParameterBean;
+import com.projectwork.constants.TestProjectConstantsIfc;
+import com.projectwork.dto.ParameterDTO;
+
+
+public class MeterDisplaySearchAction extends ActionSupport implements TestProjectConstantsIfc, ServletRequestAware
+{
+    private String feeder;
+    private String feederName;
+    private List<String> feederListSearch = new ArrayList<String>();
+    private HttpServletRequest request;
+    private List<ParameterBean> parameterList = new ArrayList<ParameterBean>();
+    List<ParameterDTO> parameterdtoList = new ArrayList<ParameterDTO>();
+    
+    public String execute() throws Exception
+            
+    {
+        String forwardString = RETURN_SUCCESS;
+        
+        request.getSession().setAttribute(SELECTED_METER, feeder);
+        request.getSession().setAttribute("SeearchedMeter", feederName);
+        
+        
+        
+     
+        
+
+        return forwardString;
+    }
+    
+    
+    public ParameterDTO getParameterDTO(ParameterBean bean)
+    {
+        ParameterDTO dto = new ParameterDTO();
+
+        dto.setParameterName(bean.getParameterName());
+
+        return dto;
+    }
+    
+    
+    public void setServletRequest(HttpServletRequest httpServletRequest)
+    {
+        this.request = httpServletRequest;
+    }
+
+    public String getFeeder()
+    {
+        return feeder;
+    }
+
+    public void setFeeder(String feeder)
+    {
+        this.feeder = feeder;
+    }
+
+    public String getFeederName()
+    {
+        return feederName;
+    }
+
+    public void setFeederName(String feederName)
+    {
+        this.feederName = feederName;
+    }
+
+    public List<String> getFeederListSearch()
+    {
+        return feederListSearch;
+    }
+
+    public void setFeederListSearch(List<String> feederListSearch)
+    {
+        this.feederListSearch = feederListSearch;
+    }
+    
+    public List<ParameterBean> getParameterList()
+    {
+        return parameterList;
+    }
+
+    public void setParameterList(List<ParameterBean> parameterList)
+    {
+        this.parameterList = parameterList;
+    }
+    
+}

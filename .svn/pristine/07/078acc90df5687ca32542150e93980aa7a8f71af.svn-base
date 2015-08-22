@@ -1,0 +1,32 @@
+package com.projectwork.bean;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
+public class FeederBean implements Serializable
+{
+
+    List feederList = new ArrayList();
+    private String feeder;
+
+    public String getFeeder()
+    {
+        return feeder;
+    }
+
+    public void setFeeder(String feeder)
+    {
+        this.feeder = feeder;
+    }
+
+    public List getFeederList()
+    {
+        return feederList;
+    }
+
+    public void setFeederList(List feederList)
+    {
+        this.feederList = feederList;
+    }
+}

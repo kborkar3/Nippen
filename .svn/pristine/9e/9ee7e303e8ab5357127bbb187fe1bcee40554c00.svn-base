@@ -1,0 +1,75 @@
+package com.projectwork.impl;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+import com.projectwork.impl.sql.UnitServiceSQLIfc;
+
+public class UnitServiceImpl extends DatabaseConnectionServiceImpl implements UnitServiceSQLIfc
+{
+
+    public boolean addNewUnit(String unitID, String unitName)
+    {
+        boolean isRecordInserted = false;
+        PreparedStatement ps = null;
+        int rs = 0;
+        Connection con = null;
+        Statement stmt = null;
+
+        String sql = null;
+
+        try
+        {
+            con = getConnection();
+            stmt = con.createStatement();
+
+            sql = CREATE_UNIT_QUERY;
+            ps = con.prepareStatement(sql);
+
+            ps.setString(1, unitID);
+            ps.setString(2, unitName);
+
+            rs = ps.executeUpdate();
+
+            if (rs == 1)
+            {
+                isRecordInserted = true;
+                System.out.println("Record for Unit inserted successfully.");
+            }
+            else
+            {
+                System.out.println("Record for Unit could not be inserted.");
+            }
+
+        }
+
+        catch (SQLException e)
+        {
+            System.out.println("Exception in closing DB resources");
+            e.printStackTrace();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            try
+            {
+                stmt.close();
+                con.close();
+            }
+            catch (SQLException e)
+            {
+                System.out.println("Exception in closing DB resources");
+            }
+        }
+
+        return isRecordInserted;
+    }
+
+}
+
+

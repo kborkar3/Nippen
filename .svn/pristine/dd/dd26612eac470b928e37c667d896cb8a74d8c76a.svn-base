@@ -1,0 +1,225 @@
+package com.projectwork.action.historicalreport;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.struts2.interceptor.ServletRequestAware;
+
+import com.opensymphony.xwork2.ActionSupport;
+import com.projectwork.bean.FeederBean;
+import com.projectwork.bean.HistoricReportBean;
+import com.projectwork.bean.ParameterBean;
+import com.projectwork.constants.TestProjectConstantsIfc;
+import com.projectwork.dto.HistoricReportDTO;
+import com.projectwork.impl.HistoricReportServiceImpl;
+import com.projectwork.impl.LoginServiceImpl;
+
+public class HistoricalReportSearchAction extends ActionSupport implements TestProjectConstantsIfc, ServletRequestAware
+{
+
+    private String feeder;
+
+    private String startDate;
+
+    private String endDate;
+
+    private HttpServletRequest request;
+
+    List<HistoricReportDTO> historicalReportdtoList = new ArrayList<HistoricReportDTO>();
+    
+    private List<FeederBean> feederList = new ArrayList<FeederBean>();
+    private List<ParameterBean> parameterList = new ArrayList<ParameterBean>();
+    
+    private String language1;
+    private String language2;
+ 
+    Map languageMap;
+
+    public String execute() throws Exception
+
+    {
+        int errorcount = 0;
+
+        if (isEmpty(startDate))
+        {
+            addActionError(getText("error.startDate.required"));
+            errorcount++;
+        }
+
+        if (isEmpty(endDate))
+        {
+            addActionError(getText("error.endDate.required"));
+            errorcount++;
+        }
+        
+        if(errorcount > 0)
+        {
+            feederList = new LoginServiceImpl().getFeederData();
+            return RETURN_ERROR;
+        }
+        
+        System.out.println("Language Selected is : " + language1);
+        
+        System.out.println("Selected parameters are : " + language2);
+        
+        List<String> selectedParametersList = Arrays.asList(language2.split("\\s*,\\s*"));
+        
+        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+        formatter.setLenient(false);
+        Date sdate = (Date)formatter.parse(startDate);
+        Date edate = (Date)formatter.parse(endDate);
+        startDate = formatter.format(sdate);
+        endDate = formatter.format(edate);
+
+        SimpleDateFormat newformatter = new SimpleDateFormat(DATE_FORMAT);
+        newformatter.setLenient(false);
+        startDate = newformatter.format(sdate);
+        endDate = newformatter.format(edate);
+
+        HistoricReportServiceImpl historicReportServiceObject = new HistoricReportServiceImpl();
+
+        List<HistoricReportBean> historicalReportList = historicReportServiceObject.getHistoricReportData(language1, selectedParametersList, 
+                startDate, endDate);
+
+        System.out.println("Size of graphParametersList is " + historicalReportList.size());
+
+        if (historicalReportList.size() > 0)
+        {
+            Iterator<HistoricReportBean> iterator = historicalReportList.iterator();
+            historicalReportdtoList = new ArrayList<HistoricReportDTO>();
+
+            while (iterator.hasNext())
+            {
+                HistoricReportDTO dto = getHistoricReportDTO(iterator.next());
+                historicalReportdtoList.add(dto);
+            }
+        }
+
+        request.getSession().setAttribute("historicalReportdtoList", historicalReportdtoList);
+
+        return RETURN_SUCCESS;
+    }
+
+
+    protected boolean isEmpty(String value)
+    {
+        if (value == null || value.trim().equals(""))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public HistoricReportDTO getHistoricReportDTO(HistoricReportBean bean)
+    {
+        HistoricReportDTO dto = new HistoricReportDTO();
+
+        SimpleDateFormat newformatter = new SimpleDateFormat(DATE_FORMAT);
+        dto.setDateStamp(newformatter.format(bean.getDateTimeStamp().getTime()));
+
+        SimpleDateFormat timeformatter = new SimpleDateFormat(TIME_FORMAT);
+        dto.setTimeStamp(timeformatter.format(bean.getDateTimeStamp().getTime()));
+
+        dto.setFeederName(bean.getFeederName());
+        dto.setValue(new Integer(bean.getValue()).toString());
+
+        return dto;
+    }
+
+    public void setServletRequest(HttpServletRequest httpServletRequest)
+    {
+        this.request = httpServletRequest;
+    }
+
+    public String getFeeder()
+    {
+        return feeder;
+    }
+
+    public void setFeeder(String feeder)
+    {
+        this.feeder = feeder;
+    }
+
+    public String getStartDate()
+    {
+        return startDate;
+    }
+
+    public void setStartDate(String startDate)
+    {
+        this.startDate = startDate;
+    }
+
+    public String getEndDate()
+    {
+        return endDate;
+    }
+
+    public void setEndDate(String endDate)
+    {
+        this.endDate = endDate;
+    }
+
+    public List<HistoricReportDTO> getHistoricalReportdtoList()
+    {
+        return historicalReportdtoList;
+    }
+
+    public void setHistoricalReportdtoList(List<HistoricReportDTO> historicalReportdtoList)
+    {
+        this.historicalReportdtoList = historicalReportdtoList;
+    }
+    public List<ParameterBean> getParameterList()
+    {
+        return parameterList;
+    }
+
+    public void setParameterList(List<ParameterBean> parameterList)
+    {
+        this.parameterList = parameterList;
+    }
+
+
+    public List<FeederBean> getFeederList()
+    {
+        return feederList;
+    }
+
+    public void setFeederList(List<FeederBean> feederList)
+    {
+        this.feederList = feederList;
+    }
+    
+    public String getLanguage1() {
+        return language1;
+    }
+    
+    public void setLanguage1(String language1) {
+        this.language1 = language1;
+    }
+ 
+    public String getLanguage2() {
+        return language2;
+    }
+ 
+    public void setLanguage2(String language2) {
+        this.language2 = language2;
+    }
+ 
+    public Map getLanguageMap() {
+        return languageMap;
+    }
+ 
+    public void setLanguageMap(Map languageMap) {
+        this.languageMap = languageMap;
+    }
+
+}

@@ -1,0 +1,74 @@
+package com.projectwork.bean;
+
+import java.util.List;
+
+public class ParameterBean
+{
+    private List parameterList;
+    private String parameterName;
+    private String parameterValue;
+    String parameterRYGB;
+    String parameterType;
+    String parameterFormat;
+    
+    public List getParameterList()
+    {
+        return parameterList;
+    }
+
+    public void setParameterList(List parameterList)
+    {
+        this.parameterList = parameterList;
+    }
+
+    public String getParameterName()
+    {
+        return parameterName;
+    }
+
+    public void setParameterName(String parameterName)
+    {
+        this.parameterName = parameterName;
+    }
+
+    public String getParameterValue()
+    {
+        return parameterValue;
+    }
+
+    public void setParameterValue(String parameterValue)
+    {
+        this.parameterValue = parameterValue;
+    }
+
+    public String getParameterRYGB()
+    {
+        return parameterRYGB;
+    }
+
+    public void setParameterRYGB(String parameterRYGB)
+    {
+        this.parameterRYGB = parameterRYGB;
+    }
+
+    public String getParameterType()
+    {
+        return parameterType;
+    }
+
+    public void setParameterType(String parameterType)
+    {
+        this.parameterType = parameterType;
+    }
+
+    public String getParameterFormat()
+    {
+        return parameterFormat;
+    }
+
+    public void setParameterFormat(String parameterFormat)
+    {
+        this.parameterFormat = parameterFormat;
+    }
+
+}

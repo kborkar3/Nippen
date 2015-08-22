@@ -1,0 +1,45 @@
+package com.projectwork.action.meterConfiguration;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.struts2.interceptor.ServletRequestAware;
+
+import com.opensymphony.xwork2.ActionSupport;
+import com.projectwork.constants.TestProjectConstantsIfc;
+
+
+public class ConfigureMeterAction extends ActionSupport implements TestProjectConstantsIfc, ServletRequestAware
+{
+    
+    private HttpServletRequest request;
+
+    public String execute() throws Exception
+            
+    {
+        String forwardString = RETURN_SUCCESS;
+        
+        //  If form validation succeeds then go to next line
+        
+        /*if ((request.getRequestedSessionId() != null && !request.isRequestedSessionIdValid()))
+        {
+         // Put configure meter code here
+            forwardString = RETURN_SUCCESS;                        
+        }
+        else
+        {
+            ActionMessages errors = new ActionMessages();
+            errors.add("loginError.message", new ActionMessage("loginError.message"));
+            saveErrors(request, errors);
+            forwardString = RETURN_LOGIN_ERROR; 
+            
+        }*/
+        
+        return RETURN_SUCCESS;
+    }
+    
+    public void setServletRequest(HttpServletRequest httpServletRequest)
+    {
+        this.request = httpServletRequest;
+    }
+    
+}

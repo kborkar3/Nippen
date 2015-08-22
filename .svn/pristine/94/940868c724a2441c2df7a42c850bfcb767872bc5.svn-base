@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC
+    "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+    "http://struts.apache.org/dtds/struts-2.0.dtd">
+
+<struts>
+	<constant name="struts.enable.DynamicMethodInvocation" value="false" />
+	<constant name="struts.devMode" value="false" />
+	<constant name="struts.custom.i18n.resources" value="ApplicationResources" />
+
+	<package name="default" extends="struts-default" namespace="/">
+		<result-types>
+			<result-type name="tiles"
+				class="org.apache.struts2.views.tiles.TilesResult" />
+		</result-types>
+
+		<action name="">
+			<result type="tiles">login</result>
+		</action>
+
+		<action name="login" class="com.projectwork.action.LoginAction">
+			<result name="success" type="tiles">meterDisplay</result>
+			<result name="error" type="tiles">login</result>
+		</action>
+
+		<action name="forgotPassword" class="com.projectwork.action.ForgotPasswordAction">
+			<result name="success" type="tiles">forgotPassword</result>
+		</action>
+
+		<action name="forgotPasswordUserAction" class="com.projectwork.action.ForgotPasswordUserAction">
+			<result name="success" type="tiles">login</result>
+		</action>
+
+
+		<action name="LogoutAction" class="com.projectwork.action.LogoutAction">
+			<result name="success" type="tiles">login</result>
+		</action>
+
+		<action name="DashboardAction" class="com.projectwork.action.LoginAction">
+			<result name="success" type="tiles">meterDisplay</result>
+			<result name="error" type="tiles">login</result>
+		</action>
+
+		<!-- Tabbed Panels -->
+
+		<action name="MeterDisplay"
+			class="com.projectwork.action.meterDisplay.MeterDisplayTabAction">
+			<result name="success" type="tiles">meterDisplay</result>
+			<result name="error" type="tiles">meterDisplay</result>
+			<result name="loginerror" type="tiles">login</result>
+		</action>
+
+		<action name="HistoricalReport"
+			class="com.projectwork.action.historicalreport.HistoricalReportTabAction">
+			<result name="success" type="tiles">historicalReport</result>
+			<result name="loginerror" type="tiles">login</result>
+		</action>
+
+		<action name="Graph" class="com.projectwork.action.graph.GraphTabAction">
+			<result name="success" type="tiles">graphTab</result>
+			<result name="loginerror" type="tiles">login</result>
+		</action>
+
+		<action name="Settings"
+			class="com.projectwork.action.company.ShowCompanyTabAction">
+			<result name="success" type="tiles">showCompany</result>
+			<result name="failed" type="tiles">addCompany</result>
+			<result name="loginerror" type="tiles">login</result>
+		</action>
+		<!-- Tabbed Panels -->
+
+		<!-- Meter Display Tab Starts -->
+
+		<action name="SelectMeterAction"
+			class="com.projectwork.action.meterDisplay.MeterDisplayTabAction">
+			<result name="success" type="tiles">meterDisplay</result>
+			<result name="error" type="tiles">meterDisplay</result>
+			<result name="loginerror" type="tiles">login</result>
+		</action>
+
+		<!-- Meter Display Tab Ends -->
+
+		<!-- Graph Display Tab Starts -->
+
+		<action name="GraphSearchAction" class="com.projectwork.action.graph.DisplayGraphAction">
+			<result name="success" type="tiles">graphSearchResults</result>
+			<result name="error" type="tiles">graphTab</result>
+			<result name="redirect" type="redirect">/Graph.action</result>
+			<result name="loginerror" type="tiles">login</result>
+		</action>
+
+		<!-- Graph Display Tab Ends -->
+
+		<!-- Historical Report Tab Ends -->
+
+		<action name="HistoricalReportSearchAction"
+			class="com.projectwork.action.historicalreport.HistoricalReportSearchAction">
+			<result name="success" type="tiles">historicalReportResults</result>
+			<result name="error" type="tiles">historicalReport</result>
+			<result name="redirect" type="redirect">/HistoricalReport.action</result>
+			<result name="loginerror" type="tiles">login</result>
+		</action>
+
+		<action name="ExportReportAction"
+			class="com.projectwork.action.historicalreport.ExportReportAction">
+			<result name="error" type="tiles">historicalReport</result>
+			<result name="loginerror" type="tiles">login</result>
+			<result name="success" type="stream">
+				<param name="contentType">application/octet-stream</param>
+				<param name="inputName">fileInputStream</param>
+				<param name="contentDisposition">attachment;filename="${fileName}"</param>
+				<param name="bufferSize">1024</param>
+			</result>
+		</action>
+
+		<!-- Historical Report Tab Ends -->
+
+
+		<!-- Settings Tab Starts -->
+
+		<action name="AddCompany" class="com.projectwork.action.company.CompanyTabAction">
+			<result name="success" type="tiles">addCompany</result>
+			<result name="loginerror" type="tiles">login</result>
+		</action>
+
+		<action name="ShowCompany"
+			class="com.projectwork.action.company.ShowCompanyTabAction">
+			<result name="success" type="tiles">showCompany</result>
+			<result name="loginerror" type="tiles">login</result>
+		</action>
+
+		<action name="AddNewCompanyAction"
+			class="com.projectwork.action.company.AddNewCompanyAction">
+			<interceptor-ref name="fileUpload">
+				<param name="maximumSize">2097152</param>
+				<param name="allowedTypes">
+					image/png,image/gif,image/jpeg,image/pjpeg
+				</param>
+			</interceptor-ref>
+			<interceptor-ref name="defaultStack">
+			</interceptor-ref>
+			<result name="success" type="tiles">addCompanySuccess</result>
+			<result name="error" type="tiles">addCompany</result>
+			<result name="input" type="tiles">addCompany</result>
+			<result name="loginerror" type="tiles">login</result>
+		</action>
+
+		<action name="DisableCompanyAction"
+			class="com.projectwork.action.company.DisableCompanyAction">
+			<result name="success" type="tiles">disableCompanySuccess</result>
+			<result name="error" type="tiles">addCompany</result>
+			<result name="loginerror" type="tiles">login</result>
+		</action>
+
+
+		<!-- Employee Tab -->
+
+		<action name="Employee"
+			class="com.projectwork.action.employee.EmployeeTabAction">
+			<result name="success" type="tiles">addNewEmployee</result>
+			<result name="loginerror" type="tiles">login</result>
+		</action>
+
+		<action name="AddNewEmployeeAction"
+			class="com.projectwork.action.employee.AddNewEmployeeAction">
+			<result name="success" type="tiles">addEmployeeSuccess</result>
+			<result name="error" type="tiles">addNewEmployee</result>
+			<result name="loginerror" type="tiles">login</result>
+		</action>
+
+		<!-- Employee Tab -->
+
+
+		<!-- Units Tab -->
+
+		<action name="Units" class="com.projectwork.action.unit.UnitTabAction">
+			<result name="success" type="tiles">addNewUnit</result>
+			<result name="loginerror" type="tiles">login</result>
+		</action>
+
+		<action name="AddNewUnitAction" class="com.projectwork.action.unit.AddNewUnitAction">
+			<result name="success" type="tiles">addUnitSuccess</result>
+			<result name="error" type="tiles">addNewUnit</result>
+			<result name="loginerror" type="tiles">login</result>
+		</action>
+
+		<!-- Units Tab -->
+
+
+		<!-- Configure Tab -->
+
+		<action name="Configure" class="com.projectwork.action.config.ConfigureTabAction">
+			<result name="success" type="tiles">configurFeeder</result>
+			<result name="loginerror" type="tiles">login</result>
+		</action>
+
+		<action name="ConfigureFeederAction"
+			class="com.projectwork.action.config.ConfigureFeederAction" method="initializeList">
+			<result name="none" type="tiles">configurFeederUpdate</result>
+			<result name="error" type="tiles">configurFeeder</result>
+			<result name="loginerror" type="tiles">login</result>
+		</action>
+
+		<action name="UpdateFeederConfigAction"
+			class="com.projectwork.action.config.UpdateFeederConfigAction">
+			<result name="success" type="tiles">configureFeederUpdateSuccess
+			</result>
+			<result name="error" type="tiles">configurFeederUpdate</result>
+			<result name="loginerror" type="tiles">login</result>
+		</action>
+
+		<!-- Configure Tab -->
+
+		<action name="customer-form">
+			<result name="success" type="tiles">customer.tiles</result>
+		</action>
+	</package>
+</struts>

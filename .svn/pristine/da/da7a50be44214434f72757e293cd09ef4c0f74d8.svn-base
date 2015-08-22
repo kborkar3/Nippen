@@ -1,0 +1,47 @@
+package com.codewithabhi.timer;
+
+import java.io.IOException;
+
+import org.apache.commons.net.ftp.FTPClient;
+
+public class FTPDownloadFile
+{
+
+    public void downlaod()
+    {
+
+        String server = "inftp.skillnetinc.com";// "www.myserver.com";
+        int port = 21;
+        String user = "aeo";
+        String pass = "aeo123";
+
+        FTPClient ftpClient = new FTPClient();
+
+        try
+        {
+            // connect and login to the server
+            ftpClient.connect(server, port);
+            ftpClient.login(user, pass);
+
+            // use local passive mode to pass firewall
+            ftpClient.enterLocalPassiveMode();
+
+            System.out.println("Connected");
+
+            String remoteDirPath = "/UK.PH1";
+            String saveDirPath = "F:/AEO";
+
+            FTPUtil.downloadDirectory(ftpClient, remoteDirPath, "", saveDirPath);
+
+            // log out and disconnect from the server
+            ftpClient.logout();
+            ftpClient.disconnect();
+
+            System.out.println("Disconnected");
+        }
+        catch (IOException ex)
+        {
+            ex.printStackTrace();
+        }
+    }
+}

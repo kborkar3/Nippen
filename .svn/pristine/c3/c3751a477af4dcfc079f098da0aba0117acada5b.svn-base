@@ -1,0 +1,479 @@
+package com.projectwork.impl;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.iss.ketan.util.FormatData;
+import com.projectwork.bean.ParameterBean;
+import com.projectwork.impl.sql.FeederProfileServiceSQLIfc;
+import com.projectwork.impl.sql.MeterParameterLinkServiceSQLIfc;
+import com.projectwork.impl.sql.ParameterServiceSQLIfc;
+
+public class FeederServiceImpl extends DatabaseConnectionServiceImpl implements FeederProfileServiceSQLIfc,
+        ParameterServiceSQLIfc, MeterParameterLinkServiceSQLIfc
+{
+    public Integer getMeterVersion(String feederName)
+    {
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        short recordFound = 0;
+        Connection con = null;
+        Statement stmt = null;
+        Integer meterIndex = 0;
+
+        String sql = null;
+        try
+        {
+            con = getConnection();
+            stmt = con.createStatement();
+
+            sql = GET_METER_VERSION;
+
+            ps = con.prepareStatement(sql);
+            ps.setString(1, feederName);
+
+            rs = ps.executeQuery();
+
+            while (rs.next())
+            {
+                meterIndex = rs.getInt(FeederProfileServiceSQLIfc.COLUMNS.METER_VERSION);
+                ++recordFound;
+            }
+
+            if (recordFound == 0)
+            {
+                throw new Exception("No Meters found");
+            }
+        }
+
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+        catch (Exception e)
+        {
+            System.out.println("Exception in closing DB resources");
+            e.printStackTrace();
+        }
+        finally
+        {
+            try
+            {
+                rs.close();
+                stmt.close();
+                con.close();
+            }
+            catch (SQLException e)
+            {
+                System.out.println("Exception in closing DB resources");
+            }
+        }
+
+        return meterIndex;
+    }
+
+    public List<ParameterBean> getParameterData(String feederName)
+    {
+        List<ParameterBean> parameterList = new ArrayList<ParameterBean>();
+        List<ParameterBean> parameterDetailsList = new ArrayList<ParameterBean>();
+        List<Integer> meterParameterAssociateions = new ArrayList<Integer>();
+        String parameterName = null;
+        String formatedParameterValue = null;
+
+        float[] parameterValues = { 230.5024f, 232.1026f, 228.3017f, 235.2061f, 229.3013f, 226.4098f, 230.6089f, 231.7052f,
+                4.1012f, 7.2045f };
+
+        // Get Meter Version from FEEDER_PROFILE
+
+        Integer meterVersion = getMeterVersion(feederName);
+
+        // Get Parameter Index from METER_PARAMETER_LINK
+
+        meterParameterAssociateions = getMeterParameterAssociateions(meterVersion);
+
+        // Get Parameter Name from PARAMETER
+
+        FormatData formatDataObj = new FormatData();
+
+        for (int i = 0; i < meterParameterAssociateions.size(); i++)
+        {
+            ParameterBean bean = new ParameterBean();
+            parameterName = getParameterName(meterParameterAssociateions.get(i));
+            parameterDetailsList = getParameterDetails(meterParameterAssociateions.get(i));
+            bean.setParameterName(parameterDetailsList.get(0).getParameterName());
+            bean.setParameterRYGB(parameterDetailsList.get(0).getParameterRYGB());
+            bean.setParameterType(parameterDetailsList.get(0).getParameterType());
+            bean.setParameterFormat(parameterDetailsList.get(0).getParameterFormat());
+
+            String paramFormat = parameterDetailsList.get(0).getParameterFormat();
+
+            if (paramFormat.equals("P"))
+            {
+                formatedParameterValue = formatDataObj.formatValue(parameterValues[i], "0.000", true);
+                bean.setParameterValue(formatedParameterValue);
+            }
+            else
+            {
+                float pv = parameterValues[i];
+                String aString = Float.toString(pv);
+                bean.setParameterValue(aString);
+            }
+
+            parameterList.add(bean);
+        }
+
+        // Call to FormatterMethods for testing
+
+        /*
+         * int[] parameterIndexes = { 13, 14, 15, 16, 17, 18, 19 }; int
+         * sizeparameterIndexes = parameterIndexes.length;
+         * System.out.println("Parameter Details List"); for (int i = 0; i <
+         * sizeparameterIndexes; i++) { List<ParameterBean> parameterDetailsList
+         * = getParameterDetails(parameterIndexes[i]);
+         * System.out.println("Parameter Name: " +
+         * parameterDetailsList.get(0).getParameterName());
+         * System.out.println("Parameter RYGB: " +
+         * parameterDetailsList.get(0).getParameterRYGB());
+         * System.out.println("Parameter Type: " +
+         * parameterDetailsList.get(0).getParameterType());
+         * System.out.println("Parameter Format: " +
+         * parameterDetailsList.get(0).getParameterFormat()); String paramFormat
+         * = parameterDetailsList.get(0).getParameterFormat(); if
+         * (paramFormat.equals("P")) {
+         * System.out.println("This is current parameter...."); }
+         * System.out.println
+         * ("*************************************************************"); }
+         */
+        return parameterList;
+    }
+
+    private List<Integer> getMeterParameterAssociateions(Integer meterVersion)
+    {
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        Connection con = null;
+        Statement stmt = null;
+        String sql = null;
+        int parameterIndex = 0;
+
+        List<Integer> meterParameterAssociateions = new ArrayList<Integer>();
+
+        try
+        {
+            con = getConnection();
+            stmt = con.createStatement();
+
+            sql = MeterParameterLinkServiceSQLIfc.GET_PARAMETER_INDEX;
+
+            ps = con.prepareStatement(sql);
+            ps.setInt(1, meterVersion);
+
+            rs = ps.executeQuery();
+
+            while (rs.next())
+            {
+                parameterIndex = rs.getInt(1);
+                meterParameterAssociateions.add(parameterIndex);
+            }
+
+            if (meterParameterAssociateions.size() == 0)
+            {
+                throw new Exception("No Meters found");
+            }
+        }
+
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+        catch (Exception e)
+        {
+            System.out.println("Exception in closing DB resources");
+            e.printStackTrace();
+        }
+        finally
+        {
+            try
+            {
+                rs.close();
+                stmt.close();
+                con.close();
+            }
+            catch (SQLException e)
+            {
+                System.out.println("Exception in closing DB resources");
+            }
+        }
+
+        return meterParameterAssociateions;
+    }
+
+    public String getParameterName(Integer parameterIndex)
+    {
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        short recordFound = 0;
+        Connection con = null;
+        Statement stmt = null;
+        String sql = null;
+        String parameterName = null;
+
+        try
+        {
+            con = getConnection();
+            stmt = con.createStatement();
+
+            sql = GET_PARAMETER_NAME;
+            ps = con.prepareStatement(sql);
+            ps.setInt(1, parameterIndex);
+
+            rs = ps.executeQuery();
+
+            while (rs.next())
+            {
+                parameterName = rs.getString(ParameterServiceSQLIfc.COLUMNS.PARAMETER_NAME);
+                ++recordFound;
+            }
+
+            if (recordFound == 0)
+            {
+                throw new Exception("No parameters found");
+            }
+        }
+
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+        catch (Exception e)
+        {
+            System.out.println("Exception in closing DB resources");
+            e.printStackTrace();
+        }
+        finally
+        {
+            try
+            {
+                rs.close();
+                stmt.close();
+                con.close();
+            }
+            catch (SQLException e)
+            {
+                System.out.println("Exception in closing DB resources");
+            }
+        }
+
+        return parameterName;
+    }
+
+    public List<ParameterBean> getParameterDetails(Integer parameterIndex)
+    {
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        short recordFound = 0;
+        Connection con = null;
+        Statement stmt = null;
+        String sql = null;
+
+        List<ParameterBean> parameterDetailsList = new ArrayList<ParameterBean>();
+
+        try
+        {
+            con = getConnection();
+            stmt = con.createStatement();
+
+            sql = GET_PARAMETER_DETAILS;
+            ps = con.prepareStatement(sql);
+            ps.setInt(1, parameterIndex);
+
+            rs = ps.executeQuery();
+
+            while (rs.next())
+            {
+                ParameterBean bean = new ParameterBean();
+
+                bean.setParameterName(rs.getString(ParameterServiceSQLIfc.COLUMNS.PARAMETER_NAME));
+                bean.setParameterRYGB(rs.getString(ParameterServiceSQLIfc.COLUMNS.PARAMETER_RYGB));
+                bean.setParameterType(rs.getString(ParameterServiceSQLIfc.COLUMNS.PARAMETER_TYPE));
+                bean.setParameterFormat(rs.getString(ParameterServiceSQLIfc.COLUMNS.PARAMETER_FORMAT));
+
+                parameterDetailsList.add(bean);
+                ++recordFound;
+            }
+
+            if (recordFound == 0)
+            {
+                throw new Exception("No parameters found");
+            }
+        }
+
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+        catch (Exception e)
+        {
+            System.out.println("Exception in closing DB resources");
+            e.printStackTrace();
+        }
+        finally
+        {
+            try
+            {
+                rs.close();
+                stmt.close();
+                con.close();
+            }
+            catch (SQLException e)
+            {
+                System.out.println("Exception in closing DB resources");
+            }
+        }
+
+        return parameterDetailsList;
+    }
+    
+    public List<String> getParameterIndexesList(List<String> selectedParametersList)
+    {
+        List<String> selectedParameterIndexesList = new ArrayList<String>();
+        String selectedParameterIndex=null;
+        String paramName = null;
+        
+        for(int i=0;i<selectedParametersList.size();i++)
+        {
+            paramName = selectedParametersList.get(i);
+            selectedParameterIndex = getParameterIndexesList(paramName);
+            selectedParameterIndexesList.add(selectedParameterIndex);
+        }
+        return selectedParameterIndexesList;
+    }
+    
+    private String getParameterIndexesList(String parameterName)
+    {
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        short recordFound = 0;
+        Connection con = null;
+        Statement stmt = null;
+        String sql = null;
+        String parameterIndex=null;
+
+        try
+        {
+            con = getConnection();
+            stmt = con.createStatement();
+
+            sql = ParameterServiceSQLIfc.GET_PARAMETER_INDEX;
+            ps = con.prepareStatement(sql);
+            ps.setString(1, parameterName);
+
+            rs = ps.executeQuery();
+
+            while (rs.next())
+            {
+                parameterIndex = rs.getString(ParameterServiceSQLIfc.COLUMNS.PARAMETER_INDEX);
+                ++recordFound;
+            }
+
+            if (recordFound == 0)
+            {
+                throw new Exception("No parameters found");
+            }
+        }
+
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+        catch (Exception e)
+        {
+            System.out.println("Exception in closing DB resources");
+            e.printStackTrace();
+        }
+        finally
+        {
+            try
+            {
+                rs.close();
+                stmt.close();
+                con.close();
+            }
+            catch (SQLException e)
+            {
+                System.out.println("Exception in closing DB resources");
+            }
+        }
+
+        return parameterIndex;
+    }
+    
+    
+    public List<Integer> getMeterVersionFromIndex(Integer parameterIndex)
+    {
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        Connection con = null;
+        Statement stmt = null;
+        String sql = null;
+        int meterVersion = 0;
+
+        List<Integer> meterParameterAssociateions = new ArrayList<Integer>();
+
+        try
+        {
+            con = getConnection();
+            stmt = con.createStatement();
+
+            sql = MeterParameterLinkServiceSQLIfc.GET_METER_VERSION_FROM_INDEX;
+
+            ps = con.prepareStatement(sql);
+            ps.setInt(1, parameterIndex);
+
+            rs = ps.executeQuery();
+
+            while (rs.next())
+            {
+                meterVersion = rs.getInt(1);
+                meterParameterAssociateions.add(meterVersion);
+            }
+
+            if (meterParameterAssociateions.size() == 0)
+            {
+                throw new Exception("No Meters found");
+            }
+        }
+
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+        catch (Exception e)
+        {
+            System.out.println("Exception in closing DB resources");
+            e.printStackTrace();
+        }
+        finally
+        {
+            try
+            {
+                rs.close();
+                stmt.close();
+                con.close();
+            }
+            catch (SQLException e)
+            {
+                System.out.println("Exception in closing DB resources");
+            }
+        }
+
+        return meterParameterAssociateions;
+    }
+
+
+}
