@@ -160,6 +160,8 @@ public class WebImportFirstLvLDataProcessr extends AbstractProcess implements We
 		final int parameterIndex = headerBean.getParameterIndex(j);
 		final double parameterData = headerBean.getParameterData(j);
 		
+		System.out.println("WebImportFirstLvLDataProcessr.saveEachParameter()");
+		
 		SimpleDateFormat sdf=new SimpleDateFormat("yyyy-M-d H:m:s");
 
 		WebImportSQLBuilder sql = new WebImportSQLBuilder(WebImportSQLBuilder.FEEDER_DATA_TABLE);

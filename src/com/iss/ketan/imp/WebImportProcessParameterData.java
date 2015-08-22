@@ -34,10 +34,10 @@ public class WebImportProcessParameterData
 		}
 		if (level == WebImportFirstLvLDataProcessr.FIRST_LVL_PROCESS)
 		{
-			ans = parameterConfig.getMultiplingFactor();
-			if (ans != 0)
+			final double mf = parameterConfig.getMultiplingFactor();
+			if (mf != 0)
 			{
-				ans = data * ans;
+				ans = data * mf;
 			}
 
 		}

@@ -238,8 +238,7 @@ public class WebImportHeaderBean implements WebImportSQLBuilderIfc
 				parameterData2.add(null);
 			}
 		}
-
-		parameterData2.add(index, data);
+		parameterData2.set(index, data);
 	}
 
 	public int getDataSize()

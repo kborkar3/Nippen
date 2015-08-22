@@ -119,4 +119,9 @@ public class WebImportSQLBuilder extends SQLBuilder implements WebImportSQLBuild
 		return results;
 	}
 
+@Override
+public String toString() {
+	// TODO Auto-generated method stub
+	return getSQL();
+}	
 }
