@@ -8,7 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Locale;
+
 import com.iss.ketan.db.custommeter.CustomParameterData;
 import com.iss.ketan.ftp.FTPDetailsBean;
 import com.iss.ketan.util.commandprocess.AbstractProcess;
@@ -131,6 +131,20 @@ public class WebImportFirstLvLDataProcessr extends AbstractProcess implements We
 					headerBean.setParameterData(j, processSingleParameterData);
 
 				}
+				for (int j = 4; j < dataSize; j++)
+				{
+					final long meterIndex = headerBean.getMeterIndex(j);
+					final int parameterIndex = headerBean.getParameterIndex(j);
+					final CustomParameterData parameterConfig = headerBean.getParameterConfig(j);
+					SepcificParameterDataExtractor sepcificParameterDataExtractor = map.get(meterIndex);
+					
+					double parameterData = headerBean.getParameterData(j);
+					
+					double processSingleParameterData = wippd.processSingleParameterData(sepcificParameterDataExtractor, parameterData, parameterConfig, THIRD_LVL_PROCESS);
+					
+					headerBean.setParameterData(j, processSingleParameterData);
+					
+				}
 
 				for (int j = 4; j < dataSize; j++)
 				{
@@ -221,7 +235,7 @@ public class WebImportFirstLvLDataProcessr extends AbstractProcess implements We
 		{
 			String string = arrayList.get(0) + " " + arrayList.get(1);
 
-			DateFormat format = new SimpleDateFormat("d/M/y H:m:s");
+			DateFormat format = new SimpleDateFormat("d-M-y H:m:s");
 			Date date = format.parse(string);
 			System.out.println(date); // Sat Jan 02 00:00:00 GMT 2010
 			return date.getTime();

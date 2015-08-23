@@ -59,12 +59,12 @@ public class LoginAction extends ActionSupport implements TestProjectConstantsIf
         
         if (!(userName.equals("admin") && password.equals("admin")))
         {
-            boolean isPasswordResetRequired = loginObject.isPasswordResetFlagPresent(userName);
+           /* boolean isPasswordResetRequired = loginObject.isPasswordResetFlagPresent(userName);
             if (isPasswordResetRequired)
             {
                 return "resetPassword";
             }
-        }
+*/        }
         
         
         if (userName.equals("admin") && password.equals("admin"))

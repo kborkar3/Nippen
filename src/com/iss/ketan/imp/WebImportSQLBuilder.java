@@ -72,7 +72,7 @@ public class WebImportSQLBuilder extends SQLBuilder implements WebImportSQLBuild
 		}
 		catch (Exception e)
 		{
-
+			e.printStackTrace();
 		}
 		return new SQLBuilderIfc[0];
 	}
