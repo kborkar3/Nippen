@@ -50,10 +50,10 @@ public class FTPDownloadFile {
 
 			// use local passive mode to pass firewall
 			ftpClient.enterLocalPassiveMode();
-
+			
 			System.out.println("Connected");
 
-			ftpClient.deleteFile(fileToDelete.toString());
+			ftpClient.deleteFile(url.getFile()+"/"+fileToDelete.getName().toString());
 			// log out and disconnect from the server
 			ftpClient.logout();
 			ftpClient.disconnect();
