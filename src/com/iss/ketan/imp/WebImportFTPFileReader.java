@@ -18,27 +18,35 @@ import com.iss.ketan.util.commandprocess.AbstractProcess;
  * @author ketan
  * 
  */
-public class WebImportFTPFileReader extends AbstractProcess
-{
+public class WebImportFTPFileReader extends AbstractProcess {
 	@Override
-	public boolean processTask()
-	{
+	public boolean processTask() {
 		WebImportCommandBean commandData = (WebImportCommandBean) getComand().getCommandData();
 
 		FTPDetailsBean getfTPBean = commandData.getfTPBean();
 
 		// this method will use of CP code and get the local file name
 		// null indicates no need to process
-		File fileName = getTheLocalFileName(getfTPBean);
-		
-		if (fileName==null)
-		{
+		File[] fileName = getTheLocalFileName(getfTPBean);
+
+		if (fileName == null) {
 			return false;
 		}
-		commandData.setLocalFileName(fileName);
-		ArrayList<String> allLines = readCompleteFile(fileName);
+		commandData.setLocalFileName(fileName[0]);
+		ArrayList<String> allLines = readCompleteFile(fileName[0]);
 
 		ArrayList<ArrayList<String>> raw2DArray = tokenLines(allLines);
+
+		try {
+			if (raw2DArray.get(raw2DArray.size() - 1).get(0).equals("end")) {
+
+				new FTPDownloadFile().deleteFile(getfTPBean, fileName[1]);
+
+			}
+
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
 
 		commandData.getRawStringTableArray().addAll(raw2DArray);
 
@@ -49,22 +57,20 @@ public class WebImportFTPFileReader extends AbstractProcess
 	 * @param allLines
 	 * @return
 	 */
-	private ArrayList<ArrayList<String>> tokenLines(ArrayList<String> allLines)
-	{
+	private ArrayList<ArrayList<String>> tokenLines(ArrayList<String> allLines) {
 
+		
 		ArrayList<ArrayList<String>> ans = new ArrayList<ArrayList<String>>();
 
-		for (int i = 0; i < allLines.size(); i++)
-		{
+		for (int i = 0; i < allLines.size(); i++) {
 			String string = allLines.get(i);
 
 			String[] split = string.split(",");
 
 			ArrayList<String> list = new ArrayList<String>();
 
-			for (int j = 0; j < split.length; j++)
-			{
-				list.add(split[i]);
+			for (int j = 0; j < split.length; j++) {
+				list.add(split[j]);
 			}
 			ans.add(list);
 
@@ -77,26 +83,21 @@ public class WebImportFTPFileReader extends AbstractProcess
 	 * @param fileName
 	 * @return
 	 */
-	private ArrayList<String> readCompleteFile(File fileName)
-	{
+	private ArrayList<String> readCompleteFile(File fileName) {
 		final ArrayList<String> ans = new ArrayList<String>();
-		try
-		{
+		try {
 			RandomAccessFile raf = new RandomAccessFile(fileName, "r");
 
 			String readLine = raf.readLine();
 
-			if (readLine != null)
-			{
-				if (readLine.length() > 0)
-				{
+			while (readLine != null) {
+				if (readLine.length() > 0) {
 					ans.add(readLine);
 				}
+				readLine=raf.readLine();
 			}
 
-		}
-		catch (Exception e)
-		{
+		} catch (Exception e) {
 			// TODO: handle exception
 		}
 
@@ -108,20 +109,15 @@ public class WebImportFTPFileReader extends AbstractProcess
 	 * @param getfTPBean
 	 * @return
 	 */
-	private File getTheLocalFileName(FTPDetailsBean getfTPBean)
-	{
-		try
-		{
-			Vector<File> downlaod = new FTPDownloadFile().downlaod(getfTPBean);
-			
-			if (downlaod.size()>0)
-			{
+	private File[] getTheLocalFileName(FTPDetailsBean getfTPBean) {
+		try {
+			Vector<File[]> downlaod = new FTPDownloadFile().downlaod(getfTPBean);
+
+			if (downlaod.size() > 0) {
 				return downlaod.get(0);
-				
+
 			}
-		}
-		catch (MalformedURLException e)
-		{
+		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

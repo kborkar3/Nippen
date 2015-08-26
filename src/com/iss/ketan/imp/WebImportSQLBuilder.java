@@ -17,10 +17,8 @@ import com.projectwork.impl.DatabaseConnectionServiceImpl;
  * @author ketan
  * 
  */
-public class WebImportSQLBuilder extends SQLBuilder implements WebImportSQLBuilderIfc
-{
-	public WebImportSQLBuilder()
-	{
+public class WebImportSQLBuilder extends SQLBuilder implements WebImportSQLBuilderIfc {
+	public WebImportSQLBuilder() {
 		this.tableName = null;
 	}
 
@@ -30,70 +28,72 @@ public class WebImportSQLBuilder extends SQLBuilder implements WebImportSQLBuild
 	/**
 	 * 
 	 */
-	public WebImportSQLBuilder(String tableName)
-	{
+	public WebImportSQLBuilder(String tableName) {
 		this.tableName = tableName;
 	}
 
-	public HashMap getFieldMethodLink()
-	{
+	public HashMap getFieldMethodLink() {
 		return null;
 	}
 
-	public HashMap getTypeHashMapInstance()
-	{
+	public HashMap getTypeHashMapInstance() {
 		return null;
 	}
 
-	public SQLBuilderIfc processResults()
-	{
+	public SQLBuilderIfc processResults() {
 		return null;
 	}
 
-	public String getTableName()
-	{
+	public String getTableName() {
 		return tableName;
 	}
 
 	/*
 	 * (non-Javadoc) override to enable only select mode
 	 */
-	public final void setMode(int mode)
-	{
+	public final void setMode(int mode) {
 
 		super.setMode(mode);
 	}
 
-	public static Serializable executeSQL(SQLBuilderIfc sql)
-	{
-		try
-		{
-			return DatabaseConnectionServiceImpl.getInstance().fireSelectSQL(sql.getSQL(), null);
+	public static Serializable executeSQL(SQLBuilderIfc sql) {
+		if (sql.getSQL().toLowerCase().startsWith("insert")) {
+			try {
+				executeInsertSQL(sql);
+				return null;
+			} catch (Exception e) {
+				// TODO: handle exception
+			}
 		}
-		catch (Exception e)
-		{
+		try {
+			return DatabaseConnectionServiceImpl.getInstance().fireSelectSQL(sql.getSQL(), null);
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return new SQLBuilderIfc[0];
 	}
 
-	public SQLBuilderIfc[] acceptResult(Object resultSet) throws Exception
-	{
-		if (resultSet instanceof ResultSet)
-		{
+	public static Serializable executeInsertSQL(SQLBuilderIfc sql) {
+		try {
+			return DatabaseConnectionServiceImpl.getInstance().fireInsertSQL(sql.getSQL(), null);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return new SQLBuilderIfc[0];
+	}
+
+	public SQLBuilderIfc[] acceptResult(Object resultSet) throws Exception {
+		if (resultSet instanceof ResultSet) {
 			ResultSet rs = (ResultSet) resultSet;
 
-			try
-			{
+			try {
 				ResultSetMetaData metaData = rs.getMetaData();
 				final int columnCount = metaData.getColumnCount();
 
-				while (rs.next())
-				{
+				while (rs.next()) {
 
 					HashMap<String, Object> row = new HashMap<String, Object>();
-					for (int i = 1; i <= columnCount; i++)
-					{
+					for (int i = 1; i <= columnCount; i++) {
 						String colName = metaData.getColumnName(i);
 						Object value = rs.getObject(i);
 
@@ -103,25 +103,21 @@ public class WebImportSQLBuilder extends SQLBuilder implements WebImportSQLBuild
 					getResults().add(row);
 				}
 
-			}
-			catch (Exception e)
-			{
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 
 		}
-		return new SQLBuilderIfc[]
-		{ this };
+		return new SQLBuilderIfc[] { this };
 	}
 
-	public ArrayList<HashMap<String, Object>> getResults()
-	{
+	public ArrayList<HashMap<String, Object>> getResults() {
 		return results;
 	}
 
-@Override
-public String toString() {
-	// TODO Auto-generated method stub
-	return getSQL();
-}	
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return getSQL();
+	}
 }

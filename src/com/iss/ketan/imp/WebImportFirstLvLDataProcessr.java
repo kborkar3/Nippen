@@ -102,6 +102,10 @@ public class WebImportFirstLvLDataProcessr extends AbstractProcess implements We
 				final long date = extractDateTime(arrayList);
 
 				final int dataSize = headerBean.getDataSize();
+				
+				if (dataSize>arrayList.size()) {
+					continue;
+				}
 
 				for (int j = 4; j < dataSize; j++)
 				{
@@ -235,7 +239,7 @@ public class WebImportFirstLvLDataProcessr extends AbstractProcess implements We
 		{
 			String string = arrayList.get(0) + " " + arrayList.get(1);
 
-			DateFormat format = new SimpleDateFormat("d-M-y H:m:s");
+			DateFormat format = new SimpleDateFormat("d/M/y H:m:s");
 			Date date = format.parse(string);
 			System.out.println(date); // Sat Jan 02 00:00:00 GMT 2010
 			return date.getTime();

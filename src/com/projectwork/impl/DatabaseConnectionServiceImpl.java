@@ -44,6 +44,38 @@ public class DatabaseConnectionServiceImpl {
 		return con;
 	}
 
+	public synchronized SQLBuilderIfc[] fireInsertSQL(String sql, Class sQLBuilderIfc) throws Exception {
+		// sql = removeSemiColonFromSQL(sql);
+		sql = sql.replace(';', ' ');
+
+		logger.debug("SQL--> " + sql);
+
+		ResultSet rs = null;
+		Statement stmt = null;
+		Connection con = null;
+		SQLBuilderIfc[] acceptResult = null;
+		try {
+			con = getConnection();
+			stmt = con.createStatement();
+			stmt.executeUpdate(sql);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		} finally {
+			if (rs != null) {
+				rs.close();
+			}
+
+			if (con != null) {
+				con.close();
+			}
+
+		}
+
+		return acceptResult;
+
+	}
+
 	public synchronized SQLBuilderIfc[] fireSelectSQL(String sql, Class sQLBuilderIfc) throws Exception {
 		// sql = removeSemiColonFromSQL(sql);
 		sql = sql.replace(';', ' ');
@@ -60,7 +92,7 @@ public class DatabaseConnectionServiceImpl {
 			rs = stmt.executeQuery(sql);
 			acceptResult = ((SQLBuilderIfc) sQLBuilderIfc.newInstance()).acceptResult(rs);
 		} catch (Exception e) {
-			 e.printStackTrace();
+			e.printStackTrace();
 			return null;
 		} finally {
 			if (rs != null) {

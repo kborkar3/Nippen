@@ -37,9 +37,9 @@ public class FTPUtil
 	 * @throws IOException
 	 *             if any network or IO error occurred.
 	 */
-	public static Vector<File> downloadDirectory(FTPClient ftpClient, URL url) throws IOException
+	public static Vector<File[]> downloadDirectory(FTPClient ftpClient, URL url) throws IOException
 	{
-		Vector<File> ans = new Vector<File>();
+		Vector<File[]> ans = new Vector<File[]>();
 		String path = url.getPath();
 		FTPFile[] subFiles = ftpClient.listFiles(path);
 
@@ -50,12 +50,13 @@ public class FTPUtil
 				String currentFileName = aFile.getName();
 
 				File filePath = File.createTempFile("FTP", ".txt");
-
-				ans.add(filePath);
+				String remoteFilePath = url.getFile() + "/" + aFile.getName();
+				ans.add(new File[]{filePath,new File(remoteFilePath)});
 				// download the file
 				// boolean success = downloadSingleFile(ftpClient,
 				// "/alkesh/Hi.txt", filePath);
-				boolean success = downloadSingleFile(ftpClient, url.getFile() + "/" + aFile.getName(), filePath);
+				
+				boolean success = downloadSingleFile(ftpClient, remoteFilePath, filePath);
 				if (success)
 				{
 					System.out.println("DOWNLOADED the file: " + filePath);
