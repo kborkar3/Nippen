@@ -1,0 +1,411 @@
+package com.projectwork.action.graph;
+
+import java.awt.Color;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
+import javax.servlet.http.HttpServletRequest;
+import org.apache.log4j.Logger;
+import org.apache.struts2.interceptor.ServletRequestAware;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartUtilities;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.data.xy.XYDataset;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
+
+import com.opensymphony.xwork2.ActionSupport;
+import com.projectwork.bean.DataTableBean;
+import com.projectwork.bean.FeederBean;
+import com.projectwork.constants.TestProjectConstantsIfc;
+import com.projectwork.impl.GraphServiceImpl;
+
+public class DisplayGraphAction extends ActionSupport implements TestProjectConstantsIfc, ServletRequestAware
+{
+    private HttpServletRequest request;
+
+    private String feeder;
+
+    private String startDate;
+
+    private String endDate;
+
+    private List<FeederBean> feederList = new ArrayList<FeederBean>();
+    
+    private static Logger logger=Logger.getLogger(DisplayGraphAction.class);
+
+    /**
+     * Graph is generated and displayed based on search criteria.
+     * 
+     * @param
+     * @return success: Graph DTO retrieved and displayed on screen
+     * @return error: No records found for entered search criteria.
+     * @throws Exception
+     */
+
+    public String execute() throws Exception
+    {
+        
+        /*
+         * JQuery UI is in dd/MM/yyyy format. So first parse and format input
+         * string to the format.
+         */
+
+        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+        formatter.setLenient(false);
+        Date sdate = (Date)formatter.parse(startDate);
+        Date edate = (Date)formatter.parse(endDate);
+        startDate = formatter.format(sdate);
+        endDate = formatter.format(edate);
+
+        /* Now covert dates in dd/MM/yyyy format to dd-MMM-yy format used by db */
+
+        SimpleDateFormat newformatter = new SimpleDateFormat(DATE_FORMAT);
+        newformatter.setLenient(false);
+       startDate = newformatter.format(sdate);
+        endDate = newformatter.format(edate);   //dd-MMM-yyyy
+        
+        java.util.Date usd = new java.text.SimpleDateFormat(DATE_FORMAT).parse(startDate);
+        java.util.Date ued = new java.text.SimpleDateFormat(DATE_FORMAT).parse(endDate);
+        java.sql.Date sqlStartDate = new java.sql.Date(usd.getTime());
+        java.sql.Date sqlEndDate = new java.sql.Date(ued.getTime());
+        
+        GraphServiceImpl graphServiceObject = new GraphServiceImpl();
+        List<DataTableBean> graphParametersList = graphServiceObject.getGraphData(sqlStartDate, sqlEndDate);
+
+        /*
+         * Get all dates between start date and end date and store it in
+         * 'datesInRangeList' for future if all the dates in between also to be
+         * shown.
+         */
+
+        List<String> datesInRangeList = getDaysBetweenDates(sdate, edate);
+
+        // Sort graph data retrieved above as per time stamp
+
+        if (!(graphParametersList.isEmpty()))
+        {
+            Collections.sort(graphParametersList, new Comparator<DataTableBean>()
+            {
+                public int compare(DataTableBean m1, DataTableBean m2)
+                {
+                    return m1.getDateTimeStamp().compareTo(m2.getDateTimeStamp());
+                }
+            });
+
+            // Check if all the dates as per input have associated records in
+            // the db
+
+            for (int i = 0; i < graphParametersList.size(); i++)
+            {
+                if (!(datesInRangeList.contains(newformatter.format(toDate(graphParametersList.get(i)
+                        .getDateTimeStamp())))))
+                    logger.error("Common value is "
+                            + newformatter.format(toDate(graphParametersList.get(i).getDateTimeStamp())));
+            }
+
+            String fullpath = request.getRealPath("") + "//" + "newLine.png";
+            File file = new File(fullpath);
+            FileOutputStream out = new FileOutputStream(file);
+
+            try
+            {
+                ChartUtilities.writeChartAsPNG(out, generateLineChart(graphParametersList), 900, 400);
+                
+                out.flush();
+                out.close();
+            }
+            catch (IOException ioEx)
+            {
+                System.err.println("Error writing PNG file ");
+            }
+            
+            request.setAttribute("fullpath", fullpath);
+            
+            
+            
+            
+            //  Alkesh
+            
+            fullpath = request.getRealPath("") + "//" + "newLine.png";
+            file = new File(fullpath);
+            out = new FileOutputStream(file);
+            
+            final XYDataset dataset = createDataset();
+            final JFreeChart chart = createChart(dataset);
+            
+            try
+            {
+                ChartUtilities.writeChartAsPNG(out, chart, 900, 400);
+                
+                out.flush();
+                out.close();
+            }
+            catch (IOException ioEx)
+            {
+                System.err.println("Error writing PNG file ");
+            }
+            
+            //  ALkesh
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            return RETURN_SUCCESS;
+        }
+        else
+        {
+            return "redirect";
+        }
+
+    }
+
+    /**
+     * This method will generate line chart
+     * 
+     * @param graphParametersList
+     * @return line chart
+     */
+
+    public static JFreeChart generateLineChart(List<DataTableBean> graphParametersList)
+    {
+        DefaultCategoryDataset dataSet = new DefaultCategoryDataset();
+
+        SimpleDateFormat newformatter = new SimpleDateFormat(DATE_FORMAT);
+        newformatter.setLenient(false);
+        for (int i = 0; i < graphParametersList.size(); i++)
+        {
+            dataSet.setValue(graphParametersList.get(i).getValue(), "Reading",
+                    newformatter.format(toDate(graphParametersList.get(i).getDateTimeStamp())));
+        }
+
+        JFreeChart chart = ChartFactory.createLineChart("Meter Reading", "Date", "Reading", dataSet,
+                PlotOrientation.VERTICAL, false, true, false);
+
+        return chart;
+    }
+
+    /**
+     * This method will get all dates between start date and end date selected
+     * by the user from search page
+     * 
+     * @param : start date and end date
+     * @return : List of all dates between start date and end date
+     */
+
+    public static List<String> getDaysBetweenDates(Date sdate, Date edate)
+    {
+        List<String> dates = new ArrayList<String>();
+        Calendar calendar = new GregorianCalendar();
+        calendar.setTime(sdate);
+
+        SimpleDateFormat newformatter = new SimpleDateFormat(DATE_FORMAT);
+        newformatter.setLenient(false);
+
+        while (calendar.getTime().before(edate))
+        {
+            Date result = calendar.getTime();
+            dates.add(newformatter.format(result));
+            calendar.add(Calendar.DATE, 1);
+        }
+        return dates;
+    }
+
+    /**
+     * This method will convert calendar date to java date
+     * 
+     * @param : timestamp
+     * @return : date in java.util.date format
+     */
+
+    public static java.util.Date toDate(Calendar cal)
+    {
+
+        Timestamp timestamp = null;
+        if (cal != null)
+        {
+            timestamp = new Timestamp(cal.getTimeInMillis());
+        }
+
+        long milliseconds = timestamp.getTime() + (timestamp.getNanos() / 1000000);
+        return new java.util.Date(milliseconds);
+    }
+
+    /**
+     * This method checks for null value
+     * 
+     * @param : String
+     * @return true: String is null
+     * @return false: String is not null
+     */
+
+    protected boolean isEmpty(String value)
+    {
+        if (value == null || value.trim().equals(""))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public void setServletRequest(HttpServletRequest httpServletRequest)
+    {
+        this.request = httpServletRequest;
+    }
+
+    public String getFeeder()
+    {
+        return feeder;
+    }
+
+    public void setFeeder(String feeder)
+    {
+        this.feeder = feeder;
+    }
+
+    public String getStartDate()
+    {
+        return startDate;
+    }
+
+    public void setStartDate(String startDate)
+    {
+        this.startDate = startDate;
+    }
+
+    public String getEndDate()
+    {
+        return endDate;
+    }
+
+    public void setEndDate(String endDate)
+    {
+        this.endDate = endDate;
+    }
+
+    public List<FeederBean> getFeederList()
+    {
+        return feederList;
+    }
+
+    public void setFeederList(List<FeederBean> feederList)
+    {
+        this.feederList = feederList;
+    }
+    
+    
+    /**
+     * Creates a sample dataset.
+     * 
+     * @return a sample dataset.
+     */
+    private XYDataset createDataset() {
+        
+        final XYSeries series1 = new XYSeries("First");
+        series1.add(1.0, 1.0);
+        series1.add(2.0, 4.0);
+        series1.add(3.0, 3.0);
+        series1.add(4.0, 5.0);
+        series1.add(5.0, 5.0);
+        series1.add(6.0, 7.0);
+        series1.add(7.0, 7.0);
+        series1.add(8.0, 8.0);
+
+        final XYSeries series2 = new XYSeries("Second");
+        series2.add(1.0, 5.0);
+        series2.add(2.0, 7.0);
+        series2.add(3.0, 6.0);
+        series2.add(4.0, 8.0);
+        series2.add(5.0, 4.0);
+        series2.add(6.0, 4.0);
+        series2.add(7.0, 2.0);
+        series2.add(8.0, 1.0);
+
+        final XYSeries series3 = new XYSeries("Third");
+        series3.add(3.0, 4.0);
+        series3.add(4.0, 3.0);
+        series3.add(5.0, 2.0);
+        series3.add(6.0, 3.0);
+        series3.add(7.0, 6.0);
+        series3.add(8.0, 3.0);
+        series3.add(9.0, 4.0);
+        series3.add(10.0, 3.0);
+
+        final XYSeriesCollection dataset = new XYSeriesCollection();
+        dataset.addSeries(series1);
+        dataset.addSeries(series2);
+        dataset.addSeries(series3);
+                
+        return dataset;
+        
+    }
+    
+    
+    /**
+     * Creates a chart.
+     * 
+     * @param dataset  the data for the chart.
+     * 
+     * @return a chart.
+     */
+    private JFreeChart createChart(final XYDataset dataset) {
+        
+        // create the chart...
+        final JFreeChart chart = ChartFactory.createXYLineChart(
+            "Line Chart Demo 6",      // chart title
+            "X",                      // x axis label
+            "Y",                      // y axis label
+            dataset,                  // data
+            PlotOrientation.VERTICAL,
+            true,                     // include legend
+            true,                     // tooltips
+            false                     // urls
+        );
+
+        // NOW DO SOME OPTIONAL CUSTOMISATION OF THE CHART...
+        chart.setBackgroundPaint(Color.white);
+
+//        final StandardLegend legend = (StandardLegend) chart.getLegend();
+  //      legend.setDisplaySeriesShapes(true);
+        
+        // get a reference to the plot for further customisation...
+        final XYPlot plot = chart.getXYPlot();
+        plot.setBackgroundPaint(Color.lightGray);
+    //    plot.setAxisOffset(new Spacer(Spacer.ABSOLUTE, 5.0, 5.0, 5.0, 5.0));
+        plot.setDomainGridlinePaint(Color.white);
+        plot.setRangeGridlinePaint(Color.white);
+        
+        final XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
+        renderer.setSeriesLinesVisible(0, false);
+        renderer.setSeriesShapesVisible(1, false);
+        plot.setRenderer(renderer);
+
+        // change the auto tick unit selection to integer units only...
+        final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+        rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+        // OPTIONAL CUSTOMISATION COMPLETED.
+                
+        return chart;
+        
+    }
+
+}

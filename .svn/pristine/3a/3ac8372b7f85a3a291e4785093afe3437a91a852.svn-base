@@ -1,0 +1,13 @@
+<validators>
+     <field name="unitID">
+        <field-validator type="required">
+            <message key="errors.required">
+        </message></field-validator>
+        <field-validator type="int">
+            <param name="min">1</param>
+            <param name="max">100</param>
+            <message key="errors.range">
+        </message>
+        </field-validator>
+    </field>  
+</validators>

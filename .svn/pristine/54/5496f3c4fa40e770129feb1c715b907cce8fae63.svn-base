@@ -1,0 +1,71 @@
+package com.cp.timer;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import org.apache.commons.net.ftp.FTPClient;
+
+import com.iss.ketan.ftp.FTPDetailsBean;
+
+public class FTPDownloadFile
+{
+
+	public static void main(String[] args) throws MalformedURLException
+	{
+		FTPDetailsBean ftpDetails = new FTPDetailsBean();
+
+		ftpDetails.setFtppath("ftp://inftp.skillnetinc.com:21/UK.PH1");
+		ftpDetails.setUserName("aeo");
+		ftpDetails.setUserName("aeo123");
+
+		new FTPDownloadFile().downlaod(ftpDetails);
+	}
+
+	public void downlaod(FTPDetailsBean ftpDetails) throws MalformedURLException
+	{
+
+		String server = ftpDetails.getFtppath();// "inftp.skillnetinc.com";
+
+		URL url = new URL(server);
+
+		String host = url.getHost();
+
+		int port = url.getPort();
+
+		if (port == -1)
+		{
+			port = 21;
+		}
+
+		// String server =ftpDetails.getFtppath();// "inftp.skillnetinc.com";
+		String user = ftpDetails.getUserName();
+		String pass = ftpDetails.getPassword();
+
+		FTPClient ftpClient = new FTPClient();
+
+		try
+		{
+			// connect and login to the server
+			ftpClient.connect(server, port);
+			ftpClient.login(user, pass);
+
+			// use local passive mode to pass firewall
+			ftpClient.enterLocalPassiveMode();
+
+			System.out.println("Connected");
+
+			FTPUtil.downloadDirectory(ftpClient, url);
+
+			// log out and disconnect from the server
+			ftpClient.logout();
+			ftpClient.disconnect();
+
+			System.out.println("Disconnected");
+		}
+		catch (IOException ex)
+		{
+			ex.printStackTrace();
+		}
+	}
+}

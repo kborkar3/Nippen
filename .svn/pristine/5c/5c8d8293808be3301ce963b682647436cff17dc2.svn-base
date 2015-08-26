@@ -1,0 +1,178 @@
+#	Login Page	#
+
+loginPage.title=Sign in
+loginPage.username.label=User Name
+loginPage.password.label=Password
+button.submit=Submit
+button.clear=Clear
+button.forgot=Forgot Password
+loginError.message=Wrong Username or Password...
+forgotPassword.message=The user is valid. Please ask System administrator to reset the password.
+forgotPassword.errormessage=The user is invalid. Please try again with valid user name.
+
+#	header
+
+header.logout=logout
+header.message= This is header section
+footer.message=Powered by............. 
+
+#	Dashboard
+
+meterTab.label=Meter Display
+histReportTab.label=Historical Reports
+graphTab.label=Graph
+settingsTab.label=Settings
+
+#	Meter Display Page
+
+selectMeter.label=Select Meter
+selectParameter.label=Select Parameter
+typeSearch.label=Type to Search
+button.go=Go
+
+#	Historic Reports Page
+
+button.export=Export
+button.newReport=New Report
+
+
+#	Graph Display Page
+
+parameter.label=Parameter
+startDate.label=Start Date
+endDate.label=End Date
+button.show=Show
+button.reset=Reset
+jquery.dateFormat=dd/mm/yy
+datePage.dateFormat=dd/MM/yyyy
+
+
+#	Settings Page
+
+settingsTab.addCompanyTab.label=Add Company
+settingsTab.showCompanyTab.label=Show Company
+settingsTab.employeeTab.label=Employee
+settingsTab.unitsTab.label=Units
+settingsTab.configTab.label=Configure
+settingsTab.miscTab.label=Misc
+settingsTab.slide12Tab.label=Slide 12
+settingsTab.slide13Tab.label=Slide 13
+settingsTab.slide14Tab.label=Slide 14
+
+#	Company Page
+
+companyID.label=Company ID
+companyName.label=Company Name
+companyAddress1.label=Company Address1
+companyCity.label=Company City
+geoId.label=Geo ID
+pinCode.label=Pin Code
+contactNumber1.label=Contact Number1
+contactNumber2.label=Contact Number2
+companyAssigned.label=Company Assigned
+companyAddress.label=Company Address
+button.addCompany=Add Company
+button.removeCompany=Remove Company
+button.disableCompany=Disable Company
+
+#	Employee Page
+
+employee.employeeID.label=Employee ID
+employee.password.label=Password
+employee.firstName.label=First Name
+employee.lastName.label=Last Name
+employee.address.label=Address
+employee.city.label=City
+employee.country.label=Country
+employee.pinCode.label=Pin Code
+employee.contactNumber.label=Contact Number
+employee.roleIndex.label=Role Index
+employee.companyID.label=Company ID
+employee.locale.label=Locale
+
+
+
+#	Personal Profile : Settings Page
+
+profileName.label=Name
+profileDesignation.label=Designation
+button.update=Update
+
+#	Units : Settings Page
+
+selectCompany.label=Select Company
+unitsAlloted.label=Units Alloted
+meter.label=Select Meter
+button.addUnit=Add Unit
+button.removeUnit=Remove Unit
+button.editUnit=Edit Unit
+
+#	Units : Add New Unit Page
+
+units.unitID=Unit ID
+units.unitName=Unit Name
+units.assignCompany=Assign Company
+
+
+#	Misc : Settings Page
+
+meterId.label=Meter ID
+feederName.label=Feeder Name
+button.assign=Assign
+
+#	Slide 12
+
+searchFeederDetails.label=Search Feeder Details
+button.search=Search
+
+#	Slide 13
+
+addCompanyName.label=Name
+addCompanyAddress.label=Address
+#button.submit=Submit
+#button.clear=Clear
+
+#	Slide 14
+
+searchCompanyDetails.label=Search Details
+#button.go=Go
+button.change=Change
+button.addUser=Add User
+button.disable=Disable
+
+
+tab4.addNew.link=Add New Profile
+tab4.remove.link=Remove Profile
+tab4.configure.link=Configure Profile
+tab4.assign.link=Assign User
+
+
+userStatusError.message=Session expired. Login again.
+
+
+#	Errors
+
+errors.required={0} is required.
+error.startDate.required=Start Date is required
+error.endDate.required=End Date is required
+
+error.unitID.required=Unit ID is required
+error.unitID.number=Unit must be a number
+error.unitName.required=Unit Name is required
+
+errors.invalid=${getText(fieldName)} is invalid.
+errors.required=${getText(fieldName)} is required.
+errors.number=${getText(fieldName)} must be a number.
+errors.range=pin code is not in the range ${min} and ${max}.
+
+# Show Company
+
+selectCompany.label=Select Company
+button.select=Select
+
+#	Employee
+
+button.addEmployee=Add Employee
+
+
+
