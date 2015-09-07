@@ -39,10 +39,10 @@ public final class WebImporInitalizer extends Object {
 			prop.load(new FileInputStream("ftpDetails.properties"));
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+		//	e.printStackTrace();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			//e.printStackTrace();
 			return;
 		}
 		FTPDetailsBean ftpDetails1 = new FTPDetailsBean();

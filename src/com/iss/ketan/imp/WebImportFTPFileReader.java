@@ -59,7 +59,6 @@ public class WebImportFTPFileReader extends AbstractProcess {
 	 */
 	private ArrayList<ArrayList<String>> tokenLines(ArrayList<String> allLines) {
 
-		
 		ArrayList<ArrayList<String>> ans = new ArrayList<ArrayList<String>>();
 
 		for (int i = 0; i < allLines.size(); i++) {
@@ -94,7 +93,7 @@ public class WebImportFTPFileReader extends AbstractProcess {
 				if (readLine.length() > 0) {
 					ans.add(readLine);
 				}
-				readLine=raf.readLine();
+				readLine = raf.readLine();
 			}
 
 		} catch (Exception e) {
@@ -110,6 +109,10 @@ public class WebImportFTPFileReader extends AbstractProcess {
 	 * @return
 	 */
 	private File[] getTheLocalFileName(FTPDetailsBean getfTPBean) {
+
+		if (true) {
+			return new File[]{new File("C:\\Users\\Ketan\\Desktop\\code\\anil\\test_15_08_31_20.csv")};
+		}
 		try {
 			Vector<File[]> downlaod = new FTPDownloadFile().downlaod(getfTPBean);
 

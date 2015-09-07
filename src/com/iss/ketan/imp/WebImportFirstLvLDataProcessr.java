@@ -1,6 +1,9 @@
 package com.iss.ketan.imp;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.sql.Timestamp;
 import java.text.DateFormat;
@@ -21,30 +24,43 @@ import com.iss.ketan.util.commandprocess.AbstractProcess;
  * @author ketan
  * 
  */
-public class WebImportFirstLvLDataProcessr extends AbstractProcess implements WebImportSQLBuilderIfc
-{
+public class WebImportFirstLvLDataProcessr extends AbstractProcess implements WebImportSQLBuilderIfc {
 	public static final int FIRST_LVL_PROCESS = 1;
 	public static final int SECOND_LVL_PROCESS = 2;
 	public static final int THIRD_LVL_PROCESS = 3;
 
 	private final WebImportProcessParameterData wippd = new WebImportProcessParameterData();
 
+	private FileOutputStream fout = null;
+	private File createTempFile =null;
+
 	@Override
-	public boolean processTask()
-	{
+	public boolean processTask() {
+
+		try {
+		
+			 setCreateTempFile(File.createTempFile("iss", ".sql"));
+			System.out.println("WebImportFirstLvLDataProcessr.processTask()>" + getCreateTempFile());
+			fout = new FileOutputStream(getCreateTempFile());
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		WebImportCommandBean commandData = (WebImportCommandBean) getComand().getCommandData();
 
-		File theLocalFileName =commandData.getLocalFileName();
-		
-		//commandData.setLocalFileName(theLocalFileName);
+		File theLocalFileName = commandData.getLocalFileName();
+
+		// commandData.setLocalFileName(theLocalFileName);
 		// ArrayList<String> readCompleteFile =
 		// readCompleteFile(theLocalFileName);
 		ArrayList<String> readCompleteFile = readCompleteFile(theLocalFileName);
 
 		ArrayList<ArrayList<String>> tokenLines = tokenLines(readCompleteFile);
 
-		if (tokenLines.size() < 2)
-		{
+		if (tokenLines.size() < 2) {
 			return true;
 		}
 		commandData.getRawStringTableArray().clear();
@@ -60,8 +76,7 @@ public class WebImportFirstLvLDataProcessr extends AbstractProcess implements We
 	/**
 	 * @param raw2dArray
 	 */
-	private void createFirstLevelMeterData(ArrayList<ArrayList<String>> raw2dArray)
-	{
+	private void createFirstLevelMeterData(ArrayList<ArrayList<String>> raw2dArray) {
 
 		final ArrayList<String> headerRow = raw2dArray.get(0);
 
@@ -72,43 +87,37 @@ public class WebImportFirstLvLDataProcessr extends AbstractProcess implements We
 
 		int size = headerBean.getDataSize();
 
-		for (int i = 1; i < size; i++)
-		{
+		for (int i = 1; i < size; i++) {
 			long meterIndex = headerBean.getMeterIndex(i);
 
-			if (meterIndex == -1)
-			{
+			if (meterIndex == -1) {
 				continue;
 			}
 
 			SepcificParameterDataExtractor sepcificParameterDataExtractor = map.get(meterIndex);
 
-			if (sepcificParameterDataExtractor == null)
-			{
+			if (sepcificParameterDataExtractor == null) {
 				sepcificParameterDataExtractor = new SepcificParameterDataExtractor(meterIndex, headerBean);
 				map.put(meterIndex, sepcificParameterDataExtractor);
 			}
 
 		}
 
-		for (int i = 1; i < raw2dArray.size(); i++)
-		{
+		for (int i = 1; i < raw2dArray.size(); i++) {
 			// process each row
 
-			try
-			{
+			try {
 				final ArrayList<String> arrayList = raw2dArray.get(i);
 
 				final long date = extractDateTime(arrayList);
 
 				final int dataSize = headerBean.getDataSize();
-				
-				if (dataSize>arrayList.size()) {
+
+				if (dataSize > arrayList.size()) {
 					continue;
 				}
 
-				for (int j = 4; j < dataSize; j++)
-				{
+				for (int j = 4; j < dataSize; j++) {
 					final String data = arrayList.get(j);
 					final long meterIndex = headerBean.getMeterIndex(j);
 					final int parameterIndex = headerBean.getParameterIndex(j);
@@ -116,13 +125,13 @@ public class WebImportFirstLvLDataProcessr extends AbstractProcess implements We
 					SepcificParameterDataExtractor sepcificParameterDataExtractor = map.get(meterIndex);
 					// since we need to apply MF first we can not complete
 					// process at one go
-					double processSingleParameterData = wippd.processSingleParameterData(sepcificParameterDataExtractor, data, parameterConfig, FIRST_LVL_PROCESS);
+					double processSingleParameterData = wippd.processSingleParameterData(sepcificParameterDataExtractor,
+							data, parameterConfig, FIRST_LVL_PROCESS);
 					headerBean.setParameterData(j, processSingleParameterData);
 
 				}
 
-				for (int j = 4; j < dataSize; j++)
-				{
+				for (int j = 4; j < dataSize; j++) {
 					final long meterIndex = headerBean.getMeterIndex(j);
 					final int parameterIndex = headerBean.getParameterIndex(j);
 					final CustomParameterData parameterConfig = headerBean.getParameterConfig(j);
@@ -130,39 +139,41 @@ public class WebImportFirstLvLDataProcessr extends AbstractProcess implements We
 
 					double parameterData = headerBean.getParameterData(j);
 
-					double processSingleParameterData = wippd.processSingleParameterData(sepcificParameterDataExtractor, parameterData, parameterConfig, SECOND_LVL_PROCESS);
+					double processSingleParameterData = wippd.processSingleParameterData(sepcificParameterDataExtractor,
+							parameterData, parameterConfig, SECOND_LVL_PROCESS);
 
 					headerBean.setParameterData(j, processSingleParameterData);
 
 				}
-				for (int j = 4; j < dataSize; j++)
-				{
+				for (int j = 4; j < dataSize; j++) {
 					final long meterIndex = headerBean.getMeterIndex(j);
 					final int parameterIndex = headerBean.getParameterIndex(j);
 					final CustomParameterData parameterConfig = headerBean.getParameterConfig(j);
 					SepcificParameterDataExtractor sepcificParameterDataExtractor = map.get(meterIndex);
-					
+
 					double parameterData = headerBean.getParameterData(j);
-					
-					double processSingleParameterData = wippd.processSingleParameterData(sepcificParameterDataExtractor, parameterData, parameterConfig, THIRD_LVL_PROCESS);
-					
+
+					double processSingleParameterData = wippd.processSingleParameterData(sepcificParameterDataExtractor,
+							parameterData, parameterConfig, THIRD_LVL_PROCESS);
+
 					headerBean.setParameterData(j, processSingleParameterData);
-					
+
 				}
 
-				for (int j = 4; j < dataSize; j++)
-				{
+				for (int j = 4; j < dataSize; j++) {
 					saveEachParameter(date, headerBean, j);
 
 				}
 
-			}
-			catch (Exception e)
-			{
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 
 		}
+		
+		File createTempFile2 = getCreateTempFile();
+		
+		WebImportSQLBuilder.executeInsertSQL(createTempFile2);
 
 	}
 
@@ -171,50 +182,56 @@ public class WebImportFirstLvLDataProcessr extends AbstractProcess implements We
 	 * @param headerBean
 	 * @param j
 	 */
-	private void saveEachParameter(final long date, WebImportHeaderBean headerBean, int j)
-	{
+	private void saveEachParameter(final long date, WebImportHeaderBean headerBean, int j) {
 
 		final long meterIndex = headerBean.getMeterIndex(j);
 		final int parameterIndex = headerBean.getParameterIndex(j);
 		final double parameterData = headerBean.getParameterData(j);
-		
+
 		System.out.println("WebImportFirstLvLDataProcessr.saveEachParameter()");
-		
-		SimpleDateFormat sdf=new SimpleDateFormat("yyyy-M-d H:m:s");
+
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-M-d H:m:s");
 
 		WebImportSQLBuilder sql = new WebImportSQLBuilder(WebImportSQLBuilder.FEEDER_DATA_TABLE);
 
 		sql.setMode(WebImportSQLBuilder.INSERT_MODE);
-		
+
+		if (meterIndex == -1) {
+			return;
+		}
 
 		sql.addFieldData(METER_INDEX, meterIndex);
 		sql.addFieldData(PARAMETER_INDEX, parameterIndex);
 		sql.addFieldData(PARAMETER_DATA, parameterData);
-		
-		String s="to_timestamp('"+sdf.format(date)+"','yyyy-mm-dd hh24:mi:ss')";
+
+		String s = "to_timestamp('" + sdf.format(date) + "','yyyy-mm-dd hh24:mi:ss')";
 		sql.addFieldDataBlindly(DATE_TIME_STAMP, s);
-		
-		 s="to_timestamp('"+sdf.format(new Date(System.currentTimeMillis()))+"','yyyy-mm-dd hh24:mi:ss')";
-		
+
+		s = "to_timestamp('" + sdf.format(new Date(System.currentTimeMillis())) + "','yyyy-mm-dd hh24:mi:ss')";
+
 		sql.addFieldDataBlindly(CREATE_TIME_STAMP, s);
 
 		System.out.println("WebImportFirstLvLDataProcessr.saveEachParameter()" + sql.getSQL());
+
+		try {
+			fout.write((sql.getSQL() + ";\n").getBytes());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		 WebImportSQLBuilder.executeSQL(sql);
 		// sql.addFieldData(me, meterIndex);
 
 	}
 
-	private String getCompanyID()
-	{
+	private String getCompanyID() {
 		WebImportCommandBean commandData = (WebImportCommandBean) getComand().getCommandData();
 
-		if (commandData == null)
-		{
+		if (commandData == null) {
 			return "0";
 		}
 
-		if (commandData.getfTPBean() != null)
-		{
+		if (commandData.getfTPBean() != null) {
 			String companyID = commandData.getfTPBean().getCompanyID();
 
 			return companyID;
@@ -228,24 +245,19 @@ public class WebImportFirstLvLDataProcessr extends AbstractProcess implements We
 	 * @param headerRow
 	 * @return
 	 */
-	private WebImportHeaderBean processHeader(ArrayList<String> headerRow, String companyId)
-	{
+	private WebImportHeaderBean processHeader(ArrayList<String> headerRow, String companyId) {
 		return new WebImportHeaderBean(headerRow, companyId);
 	}
 
-	private long extractDateTime(ArrayList<String> arrayList)
-	{
-		try
-		{
+	private long extractDateTime(ArrayList<String> arrayList) {
+		try {
 			String string = arrayList.get(0) + " " + arrayList.get(1);
 
-			DateFormat format = new SimpleDateFormat("d/M/y H:m:s");
+			DateFormat format = new SimpleDateFormat("d-M-y H:m:s");
 			Date date = format.parse(string);
 			System.out.println(date); // Sat Jan 02 00:00:00 GMT 2010
 			return date.getTime();
-		}
-		catch (Exception e)
-		{
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
@@ -256,21 +268,18 @@ public class WebImportFirstLvLDataProcessr extends AbstractProcess implements We
 	 * @param allLines
 	 * @return
 	 */
-	private ArrayList<ArrayList<String>> tokenLines(ArrayList<String> allLines)
-	{
+	private ArrayList<ArrayList<String>> tokenLines(ArrayList<String> allLines) {
 
 		ArrayList<ArrayList<String>> ans = new ArrayList<ArrayList<String>>();
 
-		for (int i = 0; i < allLines.size(); i++)
-		{
+		for (int i = 0; i < allLines.size(); i++) {
 			String string = allLines.get(i);
 
 			String[] split = string.split(",");
 
 			ArrayList<String> list = new ArrayList<String>();
 
-			for (int j = 0; j < split.length; j++)
-			{
+			for (int j = 0; j < split.length; j++) {
 				list.add(split[j]);
 			}
 			ans.add(list);
@@ -284,28 +293,22 @@ public class WebImportFirstLvLDataProcessr extends AbstractProcess implements We
 	 * @param fileName
 	 * @return
 	 */
-	private ArrayList<String> readCompleteFile(File fileName)
-	{
+	private ArrayList<String> readCompleteFile(File fileName) {
 		final ArrayList<String> ans = new ArrayList<String>();
-		try
-		{
+		try {
 			RandomAccessFile raf = new RandomAccessFile(fileName, "r");
 
 			String readLine = raf.readLine();
 
-			while (readLine != null)
-			{
+			while (readLine != null) {
 
-				if (readLine.length() > 0)
-				{
+				if (readLine.length() > 0) {
 					ans.add(readLine);
 				}
 				readLine = raf.readLine();
 			}
 
-		}
-		catch (Exception e)
-		{
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
@@ -317,16 +320,14 @@ public class WebImportFirstLvLDataProcessr extends AbstractProcess implements We
 	 * @param getfTPBean
 	 * @return
 	 */
-	private File getTheLocalFileName(FTPDetailsBean getfTPBean)
-	{
+	private File getTheLocalFileName(FTPDetailsBean getfTPBean) {
 		// CP Code
 
 		// FTP
 		return null;
 	}
 
-	public static void main(String[] args)
-	{
+	public static void main(String[] args) {
 		// WebImportFirstLvLDataProcessr webImportFirstLvLDataProcessr = new
 		// WebImportFirstLvLDataProcessr();
 
@@ -340,5 +341,13 @@ public class WebImportFirstLvLDataProcessr extends AbstractProcess implements We
 		String string = timestamp.toString();
 
 		System.out.println("WebImportFirstLvLDataProcessr.main()" + string);
+	}
+
+	private File getCreateTempFile() {
+		return createTempFile;
+	}
+
+	private void setCreateTempFile(File createTempFile) {
+		this.createTempFile = createTempFile;
 	}
 }

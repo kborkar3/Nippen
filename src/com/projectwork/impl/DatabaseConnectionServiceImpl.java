@@ -1,5 +1,7 @@
 package com.projectwork.impl;
 
+import java.io.File;
+import java.io.RandomAccessFile;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -68,6 +70,50 @@ public class DatabaseConnectionServiceImpl {
 
 			if (con != null) {
 				con.close();
+			}
+
+		}
+
+		return acceptResult;
+
+	}
+
+	public synchronized SQLBuilderIfc[] fireInsertSQL(File sqlBatch) throws Exception {
+		// sql = removeSemiColonFromSQL(sql);
+
+		ResultSet rs = null;
+		Statement stmt = null;
+		Connection con = null;
+		RandomAccessFile raf = null;
+		SQLBuilderIfc[] acceptResult = null;
+		try {
+			con = getConnection();
+			stmt = con.createStatement();
+
+			raf = new RandomAccessFile(sqlBatch, "r");
+			String sql = null;
+			while ((sql = raf.readLine()) != null) {
+
+				sql = sql.replace(';', ' ');
+				logger.debug("SQL--> " + sql);
+
+				stmt.executeUpdate(sql);
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		} finally {
+			if (rs != null) {
+				rs.close();
+			}
+
+			if (con != null) {
+				con.close();
+			}
+
+			if (raf != null) {
+				raf.close();
 			}
 
 		}

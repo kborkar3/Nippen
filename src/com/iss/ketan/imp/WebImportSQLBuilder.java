@@ -3,6 +3,7 @@
  */
 package com.iss.ketan.imp;
 
+import java.io.File;
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -62,15 +63,23 @@ public class WebImportSQLBuilder extends SQLBuilder implements WebImportSQLBuild
 				executeInsertSQL(sql);
 				return null;
 			} catch (Exception e) {
-				// TODO: handle exception
+				e.printStackTrace();
 			}
 		}
 		try {
-			return DatabaseConnectionServiceImpl.getInstance().fireSelectSQL(sql.getSQL(), null);
+			return DatabaseConnectionServiceImpl.getInstance().fireSelectSQL(sql.getSQL(), sql.getClass());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return new SQLBuilderIfc[0];
+	}
+
+	public static void executeInsertSQL(File batchSql) {
+		try {
+			DatabaseConnectionServiceImpl.getInstance().fireInsertSQL(batchSql);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	public static Serializable executeInsertSQL(SQLBuilderIfc sql) {

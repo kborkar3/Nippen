@@ -52,52 +52,55 @@ public class LoginAction extends ActionSupport implements TestProjectConstantsIf
     {
         LoginServiceImpl loginObject = new LoginServiceImpl();
 
-        request.getSession().setAttribute(USER_NAME, userName);
-        
-        //  Check if user attempting to login is redirected from forgot password flow.
-        
-        
-        if (!(userName.equals("admin") && password.equals("admin")))
+        if (userName.equals("admin"))
         {
-           /* boolean isPasswordResetRequired = loginObject.isPasswordResetFlagPresent(userName);
-            if (isPasswordResetRequired)
+            if (password.equals("admin"))
             {
-                return "resetPassword";
+                request.getSession().setAttribute(USER_TYPE, ADMINISTRATOR);
+                request.getSession().setAttribute(USER_STATUS, LOGGED_IN);
             }
-*/        }
-        
-        
-        if (userName.equals("admin") && password.equals("admin"))
-        {
-            request.getSession().setAttribute(USER_TYPE, ADMINISTRATOR);
-            request.getSession().setAttribute(USER_STATUS, LOGGED_IN);
+            else
+            {
+                addActionError(getText("loginError.message"));
+                return RETURN_ERROR;
+            }
         }
-        
+
         else
         {
             boolean isUserPresent = loginObject.validateLoginCredentials(userName, password);
-            
+
             if (!isUserPresent)
             {
-                // If user is not present in the database then error message will be
+                // If user is not present in the database then error message
+                // will be
                 // displayed on login screen.
-                
+
                 addActionError(getText("loginError.message"));
                 return RETURN_ERROR;
             }
             else
             {
+
+                // Check if user attempting to login is redirected from forgot
+                // password flow.
+
+                boolean isPasswordResetRequired = loginObject.isPasswordResetFlagPresent(userName);
+                if (isPasswordResetRequired)
+                {
+                    return "resetPassword";
+                }
+
                 request.getSession().setAttribute(USER_STATUS, LOGGED_IN);
             }
-            
         }
 
-        
+        request.getSession().setAttribute(USER_NAME, userName);
 
         // Check if any old folder exists holding temporary images
 
         WebImporInitalizer obj = new WebImporInitalizer();
-         obj.main(null);
+        obj.main(null);
 
         // Getting current system time for creating unique file name
 
@@ -188,7 +191,7 @@ public class LoginAction extends ActionSupport implements TestProjectConstantsIf
                 {
                     System.out.println(file.getName());
                     String oldFileName = file.getName();
-                    
+
                     int indexTimeString = oldFileName.lastIndexOf("_");
                     final String key = oldFileName.substring(0, indexTimeString);
                     new LogoutAction().deleteDir(file);
